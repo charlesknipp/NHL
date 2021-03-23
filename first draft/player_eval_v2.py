@@ -1,35 +1,49 @@
 from pprint import pprint
 
-class Point():
-    pts     = 0
-    goals   = 0
-    assists = 0
+class Game(object):
 
-    primary_assists   = 0
-    secondary_assists = 0
+    actions = ["goal","primary assist","secondary assist"]
+
+    # not sure how the data will be structured in bulk, but it must include
+    # a sequence of points which could be split into tuples each tuple will 
+    # have a frequency and significance per action
 
     def __init__(self):
-        Point.pts += 1
+        self.actions = []
+        self.players = []
+        self.read()
 
-    def getPoints(self):
-        return self.pts
+    # the idea here is that obs is in action like a goal, primary assist, and
+    # secondary assist with information on player and score relative to the op-
+    # posing team 
 
-    def getGoals(self):
-        return self.goals
+    def read(self,obs:dict):
+        self.actions.append(obs)
+        self.players.append(obs["players"])
+    
+    def getPlayers(self):
+        return self.players
 
-class Goal(Point):
-    Point.goals += 1
-    pass
+    def actionType(self,type):
+        for action in self.actions:
+            return action["type"]
 
-class PrimaryAssist(Point):
-    Point.assists += 1
-    Point.primary_assists += 1
-    pass
 
-class SecondaryAssist(Point):
-    Point.assists += 1
-    Point.secondary_assists += 1
-    pass
+class Player(object):
 
-goal = Goal()
-pprint(Point.__dict__)
+    # per post game data, each score type is associated with a player, so for a
+    # given player, there exists a collection of statistics collected on a per
+    # game level
+
+    def __init__(self,name):
+        self.name = name
+        self.games = []
+        self.goals = []
+        self.pri_assists = []
+        self.sec_assists = []
+        self.schedule()
+
+    def schedule(self,games):
+        for game in games:
+            if self.name in game.players:
+                self.games.append(game)
