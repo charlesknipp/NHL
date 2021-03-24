@@ -1,16 +1,38 @@
-import pandas as pd
+import requests
 
-def getGameReport(url):
-    pass
+url = requests.get("http://www.nhl.com/scores/htmlreports/20202021/GS020151.HTM")
+raw_html = url.text
 
-url = "http://www.nhl.com/scores/htmlreports/20202021/GS020151.HTM"
-tables = pd.read_html(url)
+html = raw_html.split("\n")
 
-# table[9] has the good shit
-players = list(tables[9][5])
-players.remove("Goal Scorer")
+for i in range(len(html)):
+    if "Goal Scorer" in html[i]:
+        idx = i-7
+        break
 
-refine = lambda x: ''.join([i for i in x if not i.isdigit()])
+table = []
+row = []
 
-# now we need to match the players from the sheet the NHL roster overall
-players = [refine(player).strip().replace("()","") for player in players]
+while True:
+    item = html[idx]
+
+    if "<td" in item:
+        row.append(item[item.find(">")+1:item.find("</")].strip())
+    elif "</tr>" in item:
+        table.append(row)
+        row = []
+
+    # this extracts the text from the table
+    item_text = item[item.find(">")+1:item.find("</")].strip()
+    if item_text != "":
+        print(item_text)
+
+    # this condition breaks the while loop
+    if "</table>" in item:
+        break
+
+    # iteration over list index
+    idx += 1
+
+
+print(table)
